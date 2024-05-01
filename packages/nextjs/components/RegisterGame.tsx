@@ -1,8 +1,8 @@
 import { useEffect, useReducer } from "react";
 import { Abi, AbiFunction } from "abitype";
-import { TransactionReceipt } from "viem";
+import { TransactionReceipt, formatEther } from "viem";
 import { useAccount, usePublicClient } from "wagmi";
-import { DisplayVariable, displayTxResult } from "~~/app/debug/_components/contract";
+import { DisplayVariable } from "~~/app/debug/_components/contract";
 import { SendEthButton } from "~~/app/debug/_components/contract/SendEthButton";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
@@ -25,18 +25,37 @@ export const RegisterGame: React.FC = ({}) => {
     }
     if (!publicClient) return;
 
-    const registeredPlayers = await publicClient.readContract({
+    const alivePlayers = await publicClient.readContract({
       address: deployedContractData.address,
       abi: deployedContractData.abi,
-      functionName: "getRegisteredPlayers",
+      functionName: "getAlivePlayers",
       args: undefined,
     });
-    if (!Array.isArray(registeredPlayers)) {
+    if (!Array.isArray(alivePlayers)) {
       return;
     }
-    const isPlayerRegistered = registeredPlayers.some(
-      playerAddress => playerAddress.toLowerCase() === connectedAddress.toLowerCase(),
-    );
+    const deadPlayers = await publicClient.readContract({
+      address: deployedContractData.address,
+      abi: deployedContractData.abi,
+      functionName: "getDeadPlayers",
+      args: undefined,
+    });
+    if (!Array.isArray(deadPlayers)) {
+      return;
+    }
+    const disqualifiedPlayers = await publicClient.readContract({
+      address: deployedContractData.address,
+      abi: deployedContractData.abi,
+      functionName: "getDisqualifiedPlayers",
+      args: undefined,
+    });
+    if (!Array.isArray(disqualifiedPlayers)) {
+      return;
+    }
+    const isPlayerRegistered = alivePlayers
+      .concat(deadPlayers)
+      .concat(disqualifiedPlayers)
+      .some(playerAddress => playerAddress.toLowerCase() === connectedAddress.toLowerCase());
     setIsGameRegistered(isPlayerRegistered);
   };
 
@@ -88,7 +107,7 @@ export const RegisterGame: React.FC = ({}) => {
     })
     .sort((a, b) => (b.inheritedFrom ? b.inheritedFrom.localeCompare(a.inheritedFrom) : 1));
 
-  const basicGetterFn = viewFunctions.find(({ fn }) => fn.name === "basicGetter");
+  const rewardPoolGetter = viewFunctions.find(({ fn }) => fn.name === "getRewardPool");
 
   return (
     <div className="flex-1 flex flex-col h-full p-mono">
@@ -98,7 +117,7 @@ export const RegisterGame: React.FC = ({}) => {
             <div>
               <h1 className="text-3xl font-bold text-left mt-4">Join Game</h1>
               <h1 className="text-left mt-4" style={{ lineHeight: "normal", margin: "0", wordWrap: "break-word" }}>
-                Your Register Game Description
+                Transfer 0.0015 ETH to prize pool. The player with the most kills will win the pool.
               </h1>
             </div>
             <div>
@@ -112,16 +131,15 @@ export const RegisterGame: React.FC = ({}) => {
                       value={"0.0015"}
                       onWrite={(txnReceipt: TransactionReceipt) => {
                         console.log("txnReceipt", txnReceipt);
+                        // poll every 2 seconds
                         checkPlayerRegistered();
+                        setTimeout(() => {
+                          checkPlayerRegistered();
+                        }, 2000);
                       }}
                     />
                   ) : (
-                    <button
-                      className="w-full btn btn-primary bg-secondary rounded-sm"
-                      onClick={() => setIsGameRegistered(true)}
-                    >
-                      Mock Game Register
-                    </button>
+                    <div>Register player function not found</div>
                   )}
                 </div>
               ) : (
@@ -134,14 +152,14 @@ export const RegisterGame: React.FC = ({}) => {
           className="col-span-12 lg:col-span-3 p-12"
           style={{ backgroundColor: "#160b21", borderLeft: "1px solid #0e0715" }}
         >
-          {basicGetterFn && (
+          {rewardPoolGetter && (
             <DisplayVariable
               abi={deployedContractData.abi as Abi}
-              abiFunction={basicGetterFn.fn}
+              abiFunction={rewardPoolGetter.fn}
               contractAddress={deployedContractData.address}
-              key={"getter"}
+              key={"rewardPoolGetter"}
               refreshDisplayVariables={refreshDisplayVariables}
-              inheritedFrom={basicGetterFn.inheritedFrom}
+              inheritedFrom={rewardPoolGetter.inheritedFrom}
               poll={10000}
             >
               {({ result, RefreshButton }) => {
@@ -151,9 +169,9 @@ export const RegisterGame: React.FC = ({}) => {
                     style={{ backgroundColor: "#42a232" }}
                   >
                     <div className="text-sm font-bold flex justify-center items-center">
-                      <span>YOUR GETTER</span> <span>{RefreshButton}</span>
+                      <span>PRIZE POOL</span> <span>{RefreshButton}</span>
                     </div>
-                    <div className="text-4xl mt-2">{displayTxResult(result)}</div>
+                    {result !== undefined && <div className="text-4xl mt-2">{formatEther(result)}</div>}
                   </div>
                 );
               }}

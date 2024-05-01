@@ -2,6 +2,7 @@ import { useReducer } from "react";
 import { Abi, AbiFunction } from "abitype";
 import { useAccount } from "wagmi";
 import { DisplayVariable, displayTxResult } from "~~/app/debug/_components/contract";
+import { Balance } from "~~/components/scaffold-eth";
 import { useDeployedContractInfo } from "~~/hooks/scaffold-eth";
 import { GenericContract, InheritedFunctions } from "~~/utils/scaffold-eth/contract";
 
@@ -32,7 +33,7 @@ export const Game: React.FC = ({}) => {
     })
     .sort((a, b) => (b.inheritedFrom ? b.inheritedFrom.localeCompare(a.inheritedFrom) : 1));
 
-  const basicGetterFn = viewFunctions.find(({ fn }) => fn.name === "basicGetter");
+  const getWinnerFn = viewFunctions.find(({ fn }) => fn.name === "getWinner");
 
   return (
     <div className="flex-1 flex flex-col h-full p-mono">
@@ -62,11 +63,34 @@ export const Game: React.FC = ({}) => {
         <div className="col-span-12 lg:col-span-9 p-12 flex flex-col justify-between items-center">
           <div style={{ width: "80%" }} className="flex flex-col gap-12">
             <div>
-              <h1 className="text-3xl font-bold text-left mt-4">Play Game</h1>
+              <h1 className="text-3xl font-bold text-left mt-4">Race To The Heavens</h1>
               <h1 className="text-left mt-4" style={{ lineHeight: "normal", margin: "0", wordWrap: "break-word" }}>
-                Your Main Game Screen
+                First one to move their avatar inside the red cube wins the eth!
               </h1>
             </div>
+            <div
+              style={{
+                border: "1px solid white",
+                width: "100%",
+                height: "500px", // Adjust the height as needed
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#000", // Optional: Background color
+              }}
+              className="mt-4"
+            >
+              <img
+                src="/racetothetop.png"
+                alt="Your Game Image"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            </div>
+
             <div></div>
           </div>
         </div>
@@ -74,26 +98,43 @@ export const Game: React.FC = ({}) => {
           className="col-span-12 lg:col-span-3 p-12"
           style={{ backgroundColor: "#160b21", borderLeft: "1px solid #0e0715" }}
         >
-          {basicGetterFn && (
+          <div
+            className="p-6 text-white text-center border border- border-white w-full mb-4"
+            style={{ backgroundColor: "#42a232" }}
+          >
+            <div className="text-lg font-bold flex justify-center items-center flex justify-center align-center items-center">
+              <span>Prize:</span>
+            </div>
+            <div className="my-4 mt-8" style={{ textAlign: "-webkit-center" }}>
+              <Balance
+                address={deployedContractData.address}
+                className="px-0 h-1.5 min-h-[0.375rem] text-4xl text-center"
+              />
+            </div>
+          </div>
+
+          {getWinnerFn && (
             <DisplayVariable
               abi={deployedContractData.abi as Abi}
-              abiFunction={basicGetterFn.fn}
+              abiFunction={getWinnerFn.fn}
               contractAddress={deployedContractData.address}
               key={"getter"}
               refreshDisplayVariables={refreshDisplayVariables}
-              inheritedFrom={basicGetterFn.inheritedFrom}
+              inheritedFrom={getWinnerFn.inheritedFrom}
               poll={10000}
             >
               {({ result, RefreshButton }) => {
                 return (
                   <div
-                    className="p-6 text-white text-center border border- border-white w-full"
+                    className="p-6 text-white text-center border border-white w-full"
                     style={{ backgroundColor: "#42a232" }}
                   >
-                    <div className="text-sm font-bold flex justify-center items-center">
-                      <span>YOUR GETTER</span> <span>{RefreshButton}</span>
+                    <div className="text-lg font-bold flex justify-center items-center">
+                      <span>Winner:</span> <span>{RefreshButton}</span>
                     </div>
-                    <div className="text-4xl mt-2">{displayTxResult(result)}</div>
+                    <div className="text-3xl my-4 text-center">
+                      {result === "0x0000000000000000000000000000000000000000" ? "None Yet" : displayTxResult(result)}
+                    </div>
                   </div>
                 );
               }}
