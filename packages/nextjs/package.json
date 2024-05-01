@@ -11,7 +11,8 @@
     "format": "prettier --write . '!(node_modules|.next|contracts)/**/*'",
     "check-types": "tsc --noEmit --incremental",
     "vercel": "vercel",
-    "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true"
+    "vercel:yolo": "vercel --build-env NEXT_PUBLIC_IGNORE_BUILD_ERROR=true",
+    "deploy": "NEXT_PUBLIC_IGNORE_BUILD_ERROR=true yarn run build && firebase use biomes-race-to-the-sky && firebase deploy"
   },
   "dependencies": {
     "@biomesaw/utils": "0.0.8",
