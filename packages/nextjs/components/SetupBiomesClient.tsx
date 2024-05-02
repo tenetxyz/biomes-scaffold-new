@@ -17,7 +17,7 @@ const Modal = ({ isOpen, onClose }) => {
       <div className="bg-base-100 p-4 border">
         <div className="flex flex-col gap-4 items-center">
           <div className="text-2xl text-center">Confirm You Have Imported Avatars Into Biomes Before Playing</div>
-          <img alt="" src="/importavatars/modal.png" style={{ width: "40%" }} className="rounded-sm mb-4" />
+          <img alt="" src="/importareas/modal.png" style={{ width: "40%" }} className="rounded-sm mb-4" />
         </div>
 
         <div className="flex flex-col gap-2">
