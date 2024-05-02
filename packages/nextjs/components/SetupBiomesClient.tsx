@@ -98,7 +98,7 @@ export const SetupBiomesClient: React.FC = ({}) => {
         {matchAreaGetter && (
           <div className="py-8 px-12">
             <h2 className="text-xl pb-2" style={{ borderBottom: "0.5px solid white", textAlign: "center" }}>
-              Import Match Area You Have To Stay Inside
+              Import Area You Have To Move Your Avatar Inside
             </h2>
 
             <div className="pt-2 flex flex-col gap-4 text-center" style={{ textAlign: "-webkit-center" }}>

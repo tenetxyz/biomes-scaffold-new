@@ -48,6 +48,7 @@ export const Game: React.FC = ({}) => {
           >
             Biomes
           </a>{" "}
+          and move your avatar to the red cube to win the eth!
         </div>
         <div>
           <a
