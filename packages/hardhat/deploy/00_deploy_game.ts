@@ -52,7 +52,7 @@ const deployGameContract: DeployFunction = async function (hre: HardhatRuntimeEn
     args: [
       useBiomesWorldAddress,
       {
-        lowerSouthwestCorner: { x: 221, y: 60, z: -93 },
+        lowerSouthwestCorner: { x: 221, y: 50, z: -93 },
         size: { x: 3, y: 3, z: 3 },
       },
     ],
