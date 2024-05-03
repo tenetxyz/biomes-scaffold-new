@@ -64,9 +64,9 @@ export const Game: React.FC = ({}) => {
         <div className="col-span-12 lg:col-span-9 p-12 flex flex-col justify-between items-center">
           <div style={{ width: "80%" }} className="flex flex-col gap-12">
             <div>
-              <h1 className="text-3xl font-bold text-left mt-4">Race To The Heavens</h1>
+              <h1 className="text-3xl font-bold text-left mt-4">You Are In!</h1>
               <h1 className="text-left mt-4" style={{ lineHeight: "normal", margin: "0", wordWrap: "break-word" }}>
-                First one to move their avatar inside the red cube wins the eth!
+                First one to get their avatar to enter the designated area in the sky wins the eth!
               </h1>
             </div>
             <div

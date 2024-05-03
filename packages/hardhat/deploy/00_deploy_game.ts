@@ -49,13 +49,7 @@ const deployGameContract: DeployFunction = async function (hre: HardhatRuntimeEn
   await deploy("Game", {
     from: deployer,
     // Contract constructor arguments
-    args: [
-      useBiomesWorldAddress,
-      {
-        lowerSouthwestCorner: { x: 221, y: 40, z: -93 },
-        size: { x: 3, y: 3, z: 3 },
-      },
-    ],
+    args: [useBiomesWorldAddress, { lowerSouthwestCorner: { x: 433, y: 25, z: -204 }, size: { x: 5, y: 5, z: 4 } }],
     value: "100000000000000",
     log: true,
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by

@@ -16,7 +16,7 @@ const Modal = ({ isOpen, onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
       <div className="bg-base-100 p-4 border">
         <div className="flex flex-col gap-4 items-center">
-          <div className="text-2xl text-center">Confirm You Have Imported Avatars Into Biomes Before Playing</div>
+          <div className="text-2xl text-center">Confirm You Have Imported Area Into Biomes Before Playing</div>
           <img alt="" src="/importareas/modal.png" style={{ width: "40%" }} className="rounded-sm mb-4" />
         </div>
 
@@ -114,7 +114,7 @@ export const SetupBiomesClient: React.FC = ({}) => {
                     key={"getRegisteredPlayerEntityIds"}
                     refreshDisplayVariables={refreshDisplayVariables}
                     inheritedFrom={matchAreaGetter.inheritedFrom}
-                    poll={2000}
+                    // poll={2000}
                     bigCopy={true}
                   >
                     {({ CopyButton }) => {
@@ -282,7 +282,7 @@ export const SetupBiomesClient: React.FC = ({}) => {
             onClick={toggleModal}
             disabled={false}
           >
-            I Have Imported The Avatars Into Biomes
+            I Have Imported The Area Into Biomes
           </button>
         </div>
 
