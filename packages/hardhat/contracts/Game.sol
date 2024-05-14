@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { Hook } from "@latticexyz/store/src/Hook.sol";
@@ -15,6 +16,7 @@ import { IWorld } from "@biomesaw/world/src/codegen/world/IWorld.sol";
 import { VoxelCoord } from "@biomesaw/utils/src/Types.sol";
 import { Area, insideArea } from "../utils/AreaUtils.sol";
 import { getEntityFromPlayer, getPosition } from "../utils/EntityUtils.sol";
+import { NamedArea } from "../utils/GameUtils.sol";
 
 contract Game is IOptionalSystemHook {
   address public immutable biomeWorldAddress;
@@ -101,4 +103,26 @@ contract Game is IOptionalSystemHook {
     ResourceId systemId,
     bytes memory callData
   ) external override onlyBiomeWorld {}
+
+  function getDisplayName() external view returns (string memory) {
+    return "Race To the Sky";
+  }
+
+  function getAreas() external view returns (NamedArea[] memory) {
+    NamedArea[] memory areas = new NamedArea[](1);
+    areas[0] = NamedArea({ name: "SkyBox", area: prizeArea });
+    return areas;
+  }
+
+  function getStatus() external view returns (string memory) {
+    if (isGameOver) {
+      if (winner == msg.sender) {
+        return "Game over. You won!";
+      } else {
+        return string.concat("Game over. Winner: ", Strings.toHexString(winner));
+      }
+    } else {
+      return "Game in progress. Move your avatar inside the SkyBox to win!";
+    }
+  }
 }
