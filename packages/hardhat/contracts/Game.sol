@@ -57,6 +57,7 @@ contract Game is IOptionalSystemHook {
       getEntityFromPlayer(msgSender) != bytes32(0),
       "You Must First Spawn An Avatar In Biome-1 To Play The Game."
     );
+    emit GameNotif(string.concat(Strings.toHexString(msgSender), " has joined the game"));
   }
 
   function onAfterCallSystem(
@@ -76,6 +77,8 @@ contract Game is IOptionalSystemHook {
 
       (bool sent, ) = msgSender.call{ value: address(this).balance }("");
       require(sent, "Failed to send Ether");
+
+      emit GameNotif(string.concat(Strings.toHexString(winner), " won the game!"));
 
       return;
     }
