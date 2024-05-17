@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.8.24;
 
+import { Strings } from "@openzeppelin/contracts/utils/Strings.sol";
 import { StoreSwitch } from "@latticexyz/store/src/StoreSwitch.sol";
 import { ResourceId, WorldResourceIdLib, WorldResourceIdInstance } from "@latticexyz/world/src/WorldResourceId.sol";
 import { Hook } from "@latticexyz/store/src/Hook.sol";
@@ -13,22 +14,25 @@ import { OptionalSystemHooks } from "@latticexyz/world/src/codegen/tables/Option
 
 import { IWorld } from "@biomesaw/world/src/codegen/world/IWorld.sol";
 import { VoxelCoord } from "@biomesaw/utils/src/Types.sol";
+import { Area, insideArea } from "../utils/AreaUtils.sol";
+import { getEntityFromPlayer, getPosition } from "../utils/EntityUtils.sol";
+import { NamedArea } from "../utils/GameUtils.sol";
 
-contract Game is ICustomUnregisterDelegation, IOptionalSystemHook {
+contract Game is IOptionalSystemHook {
   address public immutable biomeWorldAddress;
 
-  address public delegatorAddress;
+  Area private prizeArea;
+  bool public isGameOver = false;
+  address public winner;
 
   event GameNotif(address player, string message);
 
-  constructor(address _biomeWorldAddress, address _delegatorAddress) {
+  constructor(address _biomeWorldAddress, Area memory initialArea) payable {
     biomeWorldAddress = _biomeWorldAddress;
 
-    // Set the store address, so that when reading from MUD tables in the
-    // Biomes world, we don't need to pass the store address every time.
     StoreSwitch.setStoreAddress(_biomeWorldAddress);
 
-    delegatorAddress = _delegatorAddress;
+    prizeArea = initialArea;
   }
 
   // Use this modifier to restrict access to the Biomes World contract only
@@ -39,14 +43,7 @@ contract Game is ICustomUnregisterDelegation, IOptionalSystemHook {
   }
 
   function supportsInterface(bytes4 interfaceId) external view override returns (bool) {
-    return
-      interfaceId == type(ICustomUnregisterDelegation).interfaceId ||
-      interfaceId == type(IOptionalSystemHook).interfaceId ||
-      interfaceId == type(IERC165).interfaceId;
-  }
-
-  function canUnregister(address delegator) external override onlyBiomeWorld returns (bool) {
-    return true;
+    return interfaceId == type(IOptionalSystemHook).interfaceId || interfaceId == type(IERC165).interfaceId;
   }
 
   function onRegisterHook(
@@ -54,7 +51,48 @@ contract Game is ICustomUnregisterDelegation, IOptionalSystemHook {
     ResourceId systemId,
     uint8 enabledHooksBitmap,
     bytes32 callDataHash
-  ) external override onlyBiomeWorld {}
+  ) external override onlyBiomeWorld {
+    require(!isGameOver, "Game is already over.");
+    require(
+      getEntityFromPlayer(msgSender) != bytes32(0),
+      "You Must First Spawn An Avatar In Biome-1 To Play The Game."
+    );
+    emit GameNotif(address(0), string.concat(Strings.toHexString(msgSender), " has joined the game"));
+  }
+
+  function onAfterCallSystem(
+    address msgSender,
+    ResourceId systemId,
+    bytes memory callData
+  ) external override onlyBiomeWorld {
+    if (isGameOver) {
+      return;
+    }
+
+    VoxelCoord memory playerPosition = getPosition(getEntityFromPlayer(msgSender));
+
+    if (insideArea(prizeArea, playerPosition)) {
+      isGameOver = true;
+      winner = msgSender;
+
+      (bool sent, ) = msgSender.call{ value: address(this).balance }("");
+      require(sent, "Failed to send Ether");
+
+      emit GameNotif(address(0), string.concat(Strings.toHexString(winner), " won the game!"));
+
+      return;
+    }
+
+    return;
+  }
+
+  function getMatchArea() external view returns (Area memory) {
+    return prizeArea;
+  }
+
+  function getWinner() external view returns (address) {
+    return winner;
+  }
 
   function onUnregisterHook(
     address msgSender,
@@ -69,17 +107,25 @@ contract Game is ICustomUnregisterDelegation, IOptionalSystemHook {
     bytes memory callData
   ) external override onlyBiomeWorld {}
 
-  function onAfterCallSystem(
-    address msgSender,
-    ResourceId systemId,
-    bytes memory callData
-  ) external override onlyBiomeWorld {}
-
-  function basicGetter() external view returns (uint256) {
-    return 42;
+  function getDisplayName() external view returns (string memory) {
+    return "Race To the Sky";
   }
 
-  function getRegisteredPlayers() external view returns (address[] memory) {
-    return new address[](0);
+  function getAreas() external view returns (NamedArea[] memory) {
+    NamedArea[] memory areas = new NamedArea[](1);
+    areas[0] = NamedArea({ name: "SkyBox", area: prizeArea });
+    return areas;
+  }
+
+  function getStatus() external view returns (string memory) {
+    if (isGameOver) {
+      if (winner == msg.sender) {
+        return "Game over. You won!";
+      } else {
+        return string.concat("Game over. Winner: ", Strings.toHexString(winner));
+      }
+    } else {
+      return "Game in progress. Move your avatar inside the SkyBox to win!";
+    }
   }
 }
