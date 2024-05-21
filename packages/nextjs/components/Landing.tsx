@@ -45,9 +45,9 @@ export const Landing: React.FC = ({}) => {
       <div className="grid grid-cols-12 flex flex-1">
         <div className="col-span-12 lg:col-span-9 p-12 flex flex-col justify-between items-center">
           <div style={{ width: "80%" }}>
-            <h1 className="text-3xl font-bold text-left mt-4">Your Experience Title</h1>
+            <h1 className="text-3xl font-bold text-left mt-4">Location Guard Service</h1>
             <h1 className="text-left mt-4" style={{ lineHeight: "normal", margin: "0", wordWrap: "break-word" }}>
-              Your experience description
+              Place the guard outside your house to protect it
             </h1>
             <div
               style={{

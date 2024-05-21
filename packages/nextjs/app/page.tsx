@@ -15,7 +15,8 @@ const Home: NextPage = () => {
   const setStage = useGlobalState(({ setStage }) => setStage);
 
   const isBiomesRegistered = useGlobalState(({ isBiomesRegistered }) => isBiomesRegistered);
-  const isExperienceRegistered = useGlobalState(({ isExperienceRegistered }) => isExperienceRegistered);
+  // const isExperienceRegistered = useGlobalState(({ isExperienceRegistered }) => isExperienceRegistered);
+  const isExperienceRegistered = true;
 
   useEffect(() => {
     if (connectedAddress) {

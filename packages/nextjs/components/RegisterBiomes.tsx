@@ -7,7 +7,7 @@ import { useTargetNetwork } from "~~/hooks/scaffold-eth/useTargetNetwork";
 import { useGlobalState } from "~~/services/store/store";
 import { getAllContracts } from "~~/utils/scaffold-eth/contractsData";
 
-const ExperienceRequiredHooks: string[] = ["LogoffSystem"];
+const ExperienceRequiredHooks: string[] = ["MoveSystem", "HitSystem"];
 
 export const RegisterBiomes: React.FC = ({}) => {
   const { address: connectedAddress } = useAccount();
@@ -33,7 +33,7 @@ export const RegisterBiomes: React.FC = ({}) => {
     const delegatorAddress = await publicClient.readContract({
       address: deployedContractData?.address,
       abi: deployedContractData?.abi,
-      functionName: "delegatorAddress",
+      functionName: "guardAddress",
       args: [],
     });
     if (delegatorAddress === undefined || delegatorAddress === null || typeof delegatorAddress !== "string") {
@@ -52,7 +52,7 @@ export const RegisterBiomes: React.FC = ({}) => {
 
   useEffect(() => {
     if (deployedContractData) {
-      const hasDelegatorAddress = deployedContractData?.abi.some(abi => abi.name === "delegatorAddress");
+      const hasDelegatorAddress = deployedContractData?.abi.some(abi => abi.name === "guardAddress");
       if (hasDelegatorAddress) {
         checkDelegatorAddress();
       } else {
@@ -87,7 +87,9 @@ export const RegisterBiomes: React.FC = ({}) => {
               <h3 className="text-xl font-bold text-left mt-8">HOOKS</h3>
               <CardSection
                 relevantSystems={ExperienceRequiredHooks}
-                description={"Description of why you need the player to register the hooks on LogoffSystem"}
+                description={
+                  "When you move in front of the guard, it'll move the guard away, and it'll move it back once you're away from it."
+                }
               >
                 <RegisterHookButton
                   hookAddress={contractsData["Experience"].address}
@@ -99,7 +101,7 @@ export const RegisterBiomes: React.FC = ({}) => {
                 />
               </CardSection>
             </div>
-            {deployedContractData.abi.some(abi => abi.name === "delegatorAddress") && isDelegatorAddress && (
+            {deployedContractData.abi.some(abi => abi.name === "guardAddress") && isDelegatorAddress && (
               <div className="pt-4">
                 <h3 className="text-xl font-bold text-left">DELEGATIONS</h3>
                 <CardSection description={"Delegate unlimited access to the Experience contract"}>

@@ -32,7 +32,11 @@ export const Experience: React.FC = ({}) => {
     })
     .sort((a, b) => (b.inheritedFrom ? b.inheritedFrom.localeCompare(a.inheritedFrom) : 1));
 
-  const basicGetterFn = viewFunctions.find(({ fn }) => fn.name === "basicGetter");
+  const getAllowedPlayers = viewFunctions.find(({ fn }) => fn.name === "getAllowedPlayers");
+
+  if (getAllowedPlayers === undefined) {
+    return <div>Missing required functions</div>;
+  }
 
   return (
     <div className="flex-1 flex flex-col h-full p-mono">
@@ -62,44 +66,42 @@ export const Experience: React.FC = ({}) => {
         <div className="col-span-12 lg:col-span-9 p-12 flex flex-col justify-between items-center">
           <div style={{ width: "80%" }} className="flex flex-col gap-12">
             <div>
-              <h1 className="text-3xl font-bold text-left mt-4">Play Experience</h1>
+              <h1 className="text-3xl font-bold text-left mt-4">Location Guard Service</h1>
               <h1 className="text-left mt-4" style={{ lineHeight: "normal", margin: "0", wordWrap: "break-word" }}>
-                Your Main Experience Page
+                Will move when you&apos;re near it, and move back once you&apos;re away from it
               </h1>
             </div>
-            <div></div>
+            <div>
+              <DisplayVariable
+                abi={deployedContractData.abi as Abi}
+                abiFunction={getAllowedPlayers.fn}
+                contractAddress={deployedContractData.address}
+                key={"getAllowedPlayers"}
+                refreshDisplayVariables={refreshDisplayVariables}
+                inheritedFrom={getAllowedPlayers.inheritedFrom}
+                poll={2000}
+              >
+                {({ result, RefreshButton }) => {
+                  // if (isFetching) return <div>Loading...</div>;
+
+                  return (
+                    <div style={{ backgroundColor: "#160b21", padding: "16px", border: "1px solid #0e0715" }}>
+                      <div className="flex justify-between mb-4">
+                        <div className="text-lg font-medium">Players Allowed To Move Past Guard</div>
+                        <div className="flex gap-4">{RefreshButton}</div>
+                      </div>
+                      {displayTxResult(result)}
+                    </div>
+                  );
+                }}
+              </DisplayVariable>
+            </div>
           </div>
         </div>
         <div
           className="col-span-12 lg:col-span-3 p-12"
           style={{ backgroundColor: "#160b21", borderLeft: "1px solid #0e0715" }}
-        >
-          {basicGetterFn && (
-            <DisplayVariable
-              abi={deployedContractData.abi as Abi}
-              abiFunction={basicGetterFn.fn}
-              contractAddress={deployedContractData.address}
-              key={"getter"}
-              refreshDisplayVariables={refreshDisplayVariables}
-              inheritedFrom={basicGetterFn.inheritedFrom}
-              poll={10000}
-            >
-              {({ result, RefreshButton }) => {
-                return (
-                  <div
-                    className="p-6 text-white text-center border border- border-white w-full"
-                    style={{ backgroundColor: "#42a232" }}
-                  >
-                    <div className="text-sm font-bold flex justify-center items-center">
-                      <span>YOUR GETTER</span> <span>{RefreshButton}</span>
-                    </div>
-                    <div className="text-4xl mt-2">{displayTxResult(result)}</div>
-                  </div>
-                );
-              }}
-            </DisplayVariable>
-          )}
-        </div>
+        ></div>
       </div>
     </div>
   );
